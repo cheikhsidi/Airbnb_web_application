@@ -1,20 +1,21 @@
 project plan:
 
+
 1 - ETL process: using Pandas library
 	- data extraction
 	- data exploration
-	- data transformation, aggrgation...etc
+	- data transformation, aggregation...etc
 	- further data Mining..etc
 	- loading the data into Mongodb claster.
 
-2 - developping the Flask serving app:
+2 - developing the Flask serving app:
 	- Flask app overall look.
 	- setting up the database connection
 	- creating the jinja templates, (html, boostrap layout)
 	- api routes and contents
 
-3 - Javascript application development:
-	- developping the visualisations plan and liraries to be used
+3 - JavaScript application development:
+	- developing the visualizations plan and libraries to be used
 	- graphs (d3, plotly, or SVG...etc)
 	- leaflet map (leaflet)
 	- use of another (uncovered library) like jquery ....etc
@@ -23,4 +24,4 @@ project plan:
 4 - Reports, Presentation:
 	- writing the final report
 	- presentation slides pre
-	- formulating a stroy out of the overall project.
+	- formulating a story out of the overall project.
