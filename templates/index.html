@@ -9,14 +9,15 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     <link rel="stylesheet" href="../static/style.css">
     <link rel="stylesheet" href="../static/style_map.css">
-    <script type="text/javascript">
-        var coor = '{{ coor }}';
-        console.log(`hteml var : ${coor}`);
-    </script>
+    <link rel="shortcut icon" href="favicon.ico">
+    <link rel="icon" type="image/png" href="../static/Images/favicon.png">
     <script src="https://unpkg.com/simple-statistics@5.0.0/dist/simple-statistics.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.9.7/d3.min.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.0-rc.3/dist/leaflet.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.bundle.js"></script>
+    <script src=https://cdn.jsdelivr.net/gh/emn178/chartjs-plugin-labels/src/chartjs-plugin-labels.js></script>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
 
 </head>
 
@@ -36,29 +37,24 @@
 
                             <div class="dropdown">
 
-                                <label for="sel1"><h1>Select a Borough:</h1></label>
-                                <select class="form-control" id="sel1">
-                                                                                                            
-                                </select>
+                                <label for="sel1">
+                                    <h2>Select a Borough:</h2>
+                                </label>
+                                <select class="form-control" id="sel1"></select>
                             </div>
+                            <hr>
+                            <div class="dropdown">
+                                <label for="sel2">
+                                        <h2>Select a Room Type:</h2>
+                                    </label>
+                                <select class="form-control" id="sel2"></select>
 
-                            <div class="demographic">
-                                <div class="card border-dark mb-3" style="max-width: 30rem;">
-                                    <div class="card-header">
-                                        <h2>top ten reviews</h2>
-                                    </div>
-                                    <div class="card-body text-dark">
-                                        <p class="card-text" id="demog"></p>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-9">
                     <div id="map" class="panel panel-primary">
-                        <!-- <div id="map">
-                        </div> -->
                     </div>
                 </div>
 
@@ -66,23 +62,30 @@
 
             <div class="row">
                 <div class="col-md-4">
-                    <div id="plot1"></div>
-                </div>
-                <div class="col-md-4">
-                    <div class="panel panel-default">
-                        <div class="panel-body" id="plot2">
-                        </div>
+                    <div id="plot1" class="panel panel-primary">
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="panel panel-default">
-                        <div class="panel-body" id="plot3">
-                        </div>
+                        <canvas id="myChart" width="500" height="500"></canvas>
                     </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="panel panel-default">
+                        <canvas id="myChart2" width="500" height="500"></canvas>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <hr class="my-4">
+                    <h4>Summary of the project</h4>
+                    <a href="about">About Page</a>
                 </div>
             </div>
         </div>
     </div>
+    <div id="chartContainer" style="height: 300px; width: 100%;"></div>
+    <script type="text/javascript" src="https://canvasjs.com/assets/script/jquery-1.11.1.min.js"></script>
+    <script type="text/javascript" src="https://canvasjs.com/assets/script/jquery.canvasjs.min.js"></script>
     <!-- Leaflet JavaScript -->
     <script src="https://unpkg.com/leaflet@1.0.0-rc.3/dist/leaflet.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.2.3/d3.min.js"></script>
@@ -90,9 +93,14 @@
     <!-- <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.2.3/d3.min.js"></script> -->
     <!-- Our JavaScript -->
     <!-- <script type="text/javascript" src="static/js/choropleth.js"></script> -->
+    <script src="http://leaflet.github.io/Leaflet.heat/dist/leaflet-heat.js">
+    </script>
     <script type="text/javascript" src="../static/js/config.js"></script>
-    <script type="text/javascript" src="../static/js/app_test.js"></script>
-    <!-- <script type="text/javascript" src="../static/js/app.js"></script> -->
+    <script type="text/javascript" src="../static/js/leaflet.js"></script>
+    <script type="text/javascript" src="../static/js/chart.js"></script>
+    <script type="text/javascript" src="../static/js/app.js"></script>
+    <script type="text/javascript" src="../static/js/init.js"></script>
+
 </body>
 
 </html>

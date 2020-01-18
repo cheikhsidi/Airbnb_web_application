@@ -19,14 +19,20 @@
     }
     
     .legend {
-        line-height: 30px;
+        line-height: 20px;
         color: rgb(14, 13, 13);
     }
     
     .legend i {
-        width: 30px;
-        height: 30px;
+        width: 20px;
+        height: 20px;
         float: left;
         margin-right: 8px;
         opacity: 0.7;
+    }
+    
+    @media only screen and (min-width: 992px) {
+        #map {
+            height: 500px;
+        }
     }

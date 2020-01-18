@@ -1,128 +1,155 @@
-from flask import jsonify
+#Importing Dependencies
+from flask import jsonify, Response
 from flask import Flask, redirect, render_template
-# from flask_pymongo import PyMongo
-import pymongo
-from pymongo import MongoClient
-from bson.json_util import dumps
+from flask_sqlalchemy import SQLAlchemy
+import sqlalchemy
+import pandas as pd
+import numpy as np
+from sqlalchemy.ext.automap import automap_base
+from sqlalchemy.orm import Session
+from sqlalchemy import create_engine, func, distinct
+from api_key import password 
 import json
-# from mongoengine import connect
+
+from flask import Flask, jsonify
+
+
+#################################################
+# Flask Setup
+#################################################
 
 app = Flask(__name__)
 
 
-# Use flask_pymongo to set up mongo connection
-# client = MongoClient(
-#     "mongodb+srv://analytics:analytics.password@cluster0-g8thv.mongodb.net/test?retryWrites=true&w=majority")
-# client = MongoClient(
-#         "mongodb+srv://analytics:analytics.password@cluster0-g8thv.mongodb.net/test?retryWrites=true&w=majority")
-# db = client["aibnb_nyc"]
-# collection = db["collection"]
-# collection1 = db["collection1"]
+#################################################
+# Database Setup
+#################################################
+URI = f'postgresql://postgres:{password}@localhost:5432/airbnb_db'
+app.config["SQLALCHEMY_DATABASE_URI"] = URI
+db = SQLAlchemy(app)
 
-# Create connection variable
-conn = "mongodb://localhost:27017"
+# reflect an existing database into a new model
+Base = automap_base()
+# reflect the tables
+Base.prepare(db.engine, reflect=True)
 
-# Pass connection to the pymongo instance.
-client1 = pymongo.MongoClient(conn)
+# Save reference to the table
+# Measurement = Base.classes.measurement
+data = Base.classes.airbnNYC_data
 
-# Connect to a database. Will create one if not already available.
-db1 = client1.airbnb_nyc
-
-# create route that renders index.html template
 @app.route("/")
+@app.route("/home")
 def index():
-
     return render_template("index.html")
 
-@app.route("/data/<borough>")
-def getdata(borough):
-    print("call getdata")
-    location = {}
-    query = db1.data.find({"neighbourhood_group_cleansed":borough}).limit(1)
-    print(query)
-    for d in query:
-        location["location"] = d["Location"]
-        location["borouhs"] = d["neighbourhood_group_cleansed"]
-    print("loop complete")
-    coor = location
-    print(type(location))
-    print(location)   
-    # print(f"python :{coor}")
-    return render_template("index.html", coor=location)
-    #  latLong = [airbnb_data.latitude, aibnb_data.longitude]
+
+@app.route("/about")
+def about():
+    return render_template("about.html")
 
 
-# @app.route("/data/<borough>")
-# def data(borough):
-#     """Return the homepage."""
+@app.route("/datasets")
+def DataRoutes():
+    """Return a JSON list of dataset Routes"""
+    return '/borough\n'\
+            '/RoomT\n'\
+            '/boroughP/<Room>\n'\
+            '/listing/<borough>\n'\
+            '/Room/<borough>\n'\
+  
 
-#     lat = []
-#     lon = []
-#     airbnb_data = mongo.db.data.find({"Borough":borough})
-#     for document in airbnb_data:
-#         lat.append(document["latitude"])
-#         lon.append(document["longitude"])
-#     #  lat = airbnb_data.find({}, {"latitude": 1, "_id": 0})
-#     #  lon = airbnb_data.find({}, {"longitude": 1, "_id": 0})
-#     #  airbnb_data.aggregate([
-#     #      {"$project": {"coordinates": ["$latitude", "$longitude"]}}
-#     return render_template("index.html")
-
-
-# @app.route("/names")
-# def names():
-#     """Return a list of sample names."""
-
-#     # Use Pandas to perform the sql query
-#     stmt = db.session.query(Samples).statement
-#     df = pd.read_sql_query(stmt, db.session.bind)
-
-#     # Return a list of the column names (sample names)
-#     return jsonify(list(df.columns)[2:])
+@app.route("/borough")
+def borough():
+    """Return a JSON Borough Dropdown list"""
+     
+    # Use Pandas to perform the sql query
+    neib_list = db.session.query(distinct(data.Borough).label('dis')).statement
+    df = pd.read_sql_query(neib_list, db.session.bind)
+    d = df.to_dict('list')
+    return json.dumps(d)
 
 
-# @app.route("/dat/<sample>")
-# def sample_metadata(sample):
-#     """Return the MetaData for a given sample."""
-#     results = db.session.query(
-#         *sel).filter(data.sample == sample).sort({Employeeid: -1}).limit(10)
+@app.route("/RoomT")
+def Room():
+    """Return a JSON RoomType Dropdown list"""
 
-#     # Create a dictionary entry for each row of metadata information
-#     sample_metadata = {}
-#     for result in results:
-#         sample_metadata["Top 1"] = result[0]
-#         sample_metadata["Top 2"] = result[1]
-#         sample_metadata["Top 3"] = result[2]
-#         sample_metadata["Top 4"] = result[3]
-#         sample_metadata["Top 5"] = result[4]
+    # Use Pandas to perform the sql query
+    neib_list = db.session.query(distinct(data.Room_Type).label('room')).statement
+    df = pd.read_sql_query(neib_list, db.session.bind)
+    df['room'] = [d.replace('/', '-') for d in df['room']]
+    d = df.to_dict('list')
+    return json.dumps(d)
 
-#     print(sample_metadata)
-#     return jsonify(sample_metadata)
+@app.route("/boroughP/<Room>")
+def boroughP(Room):
+    """Return a JSON neighbourhood Dropdown list"""
+
+    # Use Pandas to perform the sql query
+    neib_list = db.session.query(data.Borough, data.Room_Type, data.Price).statement
+    df = pd.read_sql_query(neib_list, db.session.bind)
+    df['Room_Type'] = [d.replace('/', '-') for d in df['Room_Type']]
+    df = df[df['Room_Type'] == Room]
+    df1 = df.groupby('Borough').count().reset_index()
+    df2 = df.groupby('Borough').mean().reset_index().round(2)
+    df = pd.merge(df1, df2, on='Borough')
+    df = df[['Borough', 'Price_x', 'Price_y']].rename(
+    columns={'Price_x': 'Count', 'Price_y': 'Price'})
+    df['Percent'] = round((df.Count/df.Count.sum())*100, 2)
+    d = df.to_dict('records')
+    return json.dumps(d)
+
+# Listing Route
+@app.route("/listing/<borough>")
+def lising(borough):
+    """Return a JSON neighbourhood Listing dataset per neighbourhood"""
+    # Use Pandas to perform the sql query
+    neib_list = db.session.query(data.Borough,
+                                data.neighbourhood_cleansed, data.id, data.number_of_reviews, data.Price).statement
+    df = pd.read_sql_query(neib_list, db.session.bind)
+    df = df[df['Borough'] == borough]
+    df2 = df.groupby('neighbourhood_cleansed').count().reset_index()
+    df1 = df.groupby('neighbourhood_cleansed').sum().reset_index()
+    df3 = df.groupby('neighbourhood_cleansed').mean().reset_index().round(2)
+    df = pd.merge(df1, df2, on='neighbourhood_cleansed')
+    df = pd.merge(df, df3, on='neighbourhood_cleansed')
+    df = df[['neighbourhood_cleansed', 'id_y', 'number_of_reviews_x', 'Price']].rename(
+        columns={'id_y': 'Count', 'neighbourhood_cleansed': 'neighbourhood',  'number_of_reviews_x':'Reviews'})
+
+    d = df.to_dict('records')
+    return json.dumps(d)
 
 
-# @app.route("/features/<sample>")
-# def samples(sample):
-#     """Return `Latitude`, `Longitude`,and `price`."""
-#     stmt = db.session.query(Samples).statement
-#     df = pd.read_sql_query(stmt, db.session.bind)
+# Property Type Route
+@app.route("/Room/<borough>")
+def getRoom(borough):
+    """Return a JSON dataset for property type of airbnb listing"""
+    prpt = db.session.query(data.Borough, 
+                            data.Room_Type, data.Price).statement
+    df = pd.read_sql_query(prpt, db.session.bind)
+    df = df[df['Borough'] == borough]
+    df1 = df.groupby('Room_Type').count().reset_index()
+    df2 = df.groupby('Room_Type').mean().reset_index().round(2)
+    df = pd.merge(df1, df2, on='Room_Type')
+    df = df[['Room_Type', 'Borough', 'Price_y']].rename(
+    columns={'Price_y': 'Avg_price'})
+    df['percent'] = round((df.Borough/df.Borough.sum())*100, 2)
+    d = df.to_dict('records')
+    print(len(d))
+    return json.dumps(d)
 
-#     # Filter the data based on the sample number and
-#     # only keep rows with values above 1
-#     sample_data = df.loc[df[sample] > 1, ["latitude", "longitude", sample]]
-#     # Format the data to send as json
-#     data = {
-#         "otu_ids": sample_data.otu_id.values.tolist(),
-#         "sample_values": sample_data[sample].values.tolist(),
-#         "otu_labels": sample_data.otu_label.tolist(),
-#     }
-#     return jsonify(data)
 
+@app.route("/price/<Borough>")
+def price(Borough):
+    """Return a list of sample names."""
+    avlb = db.session.query(data.Price, data.neighbourhood_cleansed,
+                            data.Borough).statement
 
-# if __name__ == "__main__":
-#     # Bind to PORT if defined, otherwise default to 5000.
-#     port = int(os.environ.get("PORT", 5000))
-#     app.run(host="0.0.0.0", port=port)
-#     # app.run()
+    df = pd.read_sql_query(avlb, db.session.bind)
+    df = df[df['Borough'] == Borough]
+    df_price = pd.crosstab(df.Price, df.neighbourhood_cleansed)
+    d = df_price.to_dict('list')
+    print(len(d))
+    return json.dumps(d)
 
 
 if __name__ == "__main__":

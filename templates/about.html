@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>About</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" href="../static/style.css">
+    <script src="https://unpkg.com/simple-statistics@5.0.0/dist/simple-statistics.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.9.7/d3.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.0-rc.3/dist/leaflet.css" />
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+</head>
+
+<body>
+    <div class="wrapper">
+        <div class="container-fluid">
+
+            <div class="jumbotron">
+                <h1 class="display-4 text-center">About The Project</h1>
+                <p class="text-center">See below summary detailing how this project was put together</p>
+            </div>
+            <p class="lead">For this project, we pulled 2019 airbnb listings in New York City data from <a href="http://insideairbnb.com/get-the-data.html">insideairbnb</a>.
+                <br> Once we pulled the data, we had to perform an ETL to become more familiar with the data and also give our group a direction on which informatin to include in the dashboard.
+                <br> We used Pandas to import and sort through the data. We then loaded the transformed data into PostgreSQL database.
+                <br> The next step was creating the actual dashboard to let our data tell a story.
+                <br> We did this by developing a user friendly dashboard through app flask, where the user can explore and reach their own conclusions on what the data is saying.
+                <br> We also created a map through leaflet of our airbnb stays in New York City based on popularity to show the user which parts of the city are being booked the most.
+                <br> This ties into the goal of our dashboard, which is to give the user factors that affect bookings in each burrough of New York City.
+                <br> The graphs shown on the dashboard were created with plotly.
+                <br> We then created a webpage, designed through css and formatted through html to give the user a place to view our dashboard.
+            </p>
+
+            <hr class="my-4">
+            <h4>back to Dashboard</h4>
+            <a href="home">Home</a>
+        </div>
+    </div>
+</body>
+
+</html>

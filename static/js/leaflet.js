@@ -1,119 +1,212 @@
-// Load in geojson data
-// var data = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson';
+// Load in Dashboard
 
-// function to change marker size
-function markerSize(x) {
-    return x * 8;
+
+// function to merge the count peroperties of the listing to the geojson
+function mergeJson(js1, js2) {
+    for (var i = 0; i < js2.length; i++) {
+        for (var j = 0; j < js1.length; j++) {
+            if (js1[j].properties.neighbourhood === js2[i].neighbourhood) {
+                js1[j].properties.count = js2[i].Count
+                js1[j].properties.Reviews = js2[i].Reviews
+                js1[j].properties.Price = js2[i].Price
+            }
+        }
+    }
+    return js1;
 }
 
-// Adding light map tile layer
-var lightmap = L.tileLayer("https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}", {
-    attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery Â© <a href=\"https://www.mapbox.com/\">Mapbox</a>",
-    maxZoom: 18,
-    id: "mapbox.light",
-    accessToken: API_KEY
-});
+function markerSize(x) {
+    return x * 1;
+}
 
 // Adding Outdoor tile layer
 var outdoors = L.tileLayer("https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}", {
-    attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery Â© <a href=\"https://www.mapbox.com/\">Mapbox</a>",
+    attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
     maxZoom: 18,
-    id: "mapbox.street",
+    id: "mapbox.outdoors",
     accessToken: API_KEY
 });
 
 // Adding the BaseMap
 var baseMaps = {
-    "Street": outdoors,
-    "GrayScate": lightmap
+    "Outdoors": outdoors
 };
 
-// Create Layers
-var layers = {
-    airBnbs: new L.LayerGroup(),
-    crime: new L.LayerGroup()
-};
-
-
-
-// console.log(`/airbnb_data`)
 // Create the map
 var myMap = L.map("map", {
-    center: [34.0522, -118.2437],
-    zoom: 6,
-    // layers: [lightmap,
-    //     layers.Reiviews,
-    //     layers.Prices
-    // ]
+    center: [40.84, -73.8659],
+    zoom: 12,
+    layers: outdoors
+        // layers.Count,
+        //     layers.Reviews
+        // ]
 
 });
 
-L.marker(latlong)
-    .bindPopup('hello')
-    .addTo(myMap);
+// return color based on Listing
+function getValue(x) {
+
+    return x > 1500 ? "#E31A1C" :
+        x > 1000 ? "#FC4E2A" :
+        x > 500 ? "#FD8D3C" :
+        x > 100 ? "#FEB24C" :
+        x > 50 ? "#FED976" :
+        "#FFEDA0";
+}
 
 
-// Creating the Overlay layers
-var overlayMaps = {
-    "Reiviews": layers.Reiviews,
-    "Price": layers.Prices
+// return color based on Reviews
+function getValue1(x) {
+
+    return x > 10000 ? "#770087" :
+        x > 5000 ? "#9600B3" :
+        x > 2000 ? "#AA00D7" :
+        x > 1000 ? "#C030ED" :
+        x > 500 ? "#DC86FA" :
+        "#FBF2FF";
+}
+
+function getValueP(x) {
+
+    return x > 300 ? "#770087" :
+        x > 200 ? "#9600B3" :
+        x > 150 ? "#AA00D7" :
+        x > 90 ? "#C030ED" :
+        x > 40 ? "#DC86FA" :
+        "#FBF2FF";
+}
+
+// Styling the Map Listing(count)
+function areaStyle(feature) {
+    return {
+        fillColor: getValue(feature.properties.count),
+        weight: 2,
+        opacity: 1,
+        color: 'blue',
+        dashArray: '3',
+        fillOpacity: 1
+    }
 };
 
-// return color based on value
-function getValue(x) {
-    return x > 5 ? "#E31A1C" :
-        x > 4 ? "#FC4E2A" :
-        x > 3 ? "#FD8D3C" :
-        x > 2 ? "#FEB24C" :
-        x > 1 ? "#FED976" :
-        "#FFEDA0";
-
-}
-
-// # style function 
-function style(feature) {
+// Styling the Map Reviews 
+function areaStyle1(feature) {
     return {
-        fillOpacity: 0.8,
-        color: getValue(feature.properties.mag),
-        // color: "white",
-        stroke: false,
-        radius: markerSize(feature.properties.mag)
+        fillColor: getValue1(feature.properties.Reviews),
+        weight: 2,
+        opacity: 1,
+        color: 'white',
+        dashArray: '3',
+        fillOpacity: 0.7
+    }
+};
+
+function areaStyleP(feature) {
+    return {
+        fillColor: getValueP(feature.properties.Price),
+        weight: 2,
+        opacity: 1,
+        color: 'white',
+        dashArray: '3',
+        fillOpacity: 0.7
+    }
+};
+var layers;
+
+// Initializing the Control
+var baseControl = L.control.layers(baseMaps).addTo(myMap);
+var LayerControl;
+var geojsonLayer1;
+var geojsonLayer2;
+var geojsonLayer3;
+
+// Creating a function to build the Map
+function BuildMap(borough) {
+    var listing = `http://127.0.0.1:5000/listing/${borough}`;
+    var nyc_shp = "../static/neighbourhoods.geojson";
+
+    // Create Layers
+    layers = {
+        Count: new L.LayerGroup(),
+        Reviews: new L.LayerGroup(),
+        avg_price: new L.LayerGroup()
     };
-}
 
+    // myMap.removeControl(LayerControl);
+    d3.json(nyc_shp, function(d) {
+        var features = d.features
+        console.log(features)
+        d3.json(listing, function(ls) {
+            console.log(ls)
+            var merged_feature = mergeJson(features, ls)
+            console.log(merged_feature)
+                // Creating The Listing count layer per Borough
+            geojsonlayer1 = L.geoJSON(merged_feature, {
+                filter: function(feature, layer) {
+                    return feature.properties.neighbourhood_group === borough;
+                },
 
+                style: function(feature, layer) {
+                    return areaStyle(feature);
+                },
+                onEachFeature: function(feature, layer) {
+                    layer.bindPopup("<h3>" + feature.properties.neighbourhood + "</h3> <hr> <h4> Listing:" + feature.properties.count + "</h4>");
+                }
 
-// Adding the Plates Layer
-var price = `/prcies`;
-d3.json(price, function(p) {
-    var Price = L.geoJson(p).setStyle({ fillColor: 'None', color: 'blue' });
-    Price.addTo(layers.Prices)
-});
+            }).addTo(layers.Count);
 
-// Grab data with d3
-var data = `/reviews`;
-d3.json(data, function(d) {
-    var MetaData = d.metadata;
-    var features = d.features;
-    console.log(MetaData);
-    console.log(features);
-    console.log(features[0].properties.mag);
-    // Looping through the dataset and creating circles
-    features.forEach(feature => {
-        var LatLong = feature.geometry.coordinates.slice(0, 2).reverse();
-        L.circleMarker(LatLong, style(feature)).bindPopup("<h1> Magnitude :" + feature.properties.mag + "</h1> <hr> <h3> Place:" + feature.properties.place + "</h3>").addTo(layers.Reiviews);
+            // Creating Reviews Layer per Borough
+            geojsonlayer2 = L.geoJSON(merged_feature, {
+                filter: function(feature, layer) {
+                    return feature.properties.neighbourhood_group === borough;
+                },
+
+                style: function(feature, layer) {
+                    return areaStyle1(feature);
+                },
+                onEachFeature: function(feature, layer) {
+                    layer.bindPopup("<h3>" + feature.properties.neighbourhood + "</h3> <hr> <h4> Reviews:" + feature.properties.Reviews + "</h4>");
+                }
+            }).addTo(layers.Reviews);
+
+            // Creating Price Layer per Borough
+            geojsonlayer3 = L.geoJSON(merged_feature, {
+                filter: function(feature, layer) {
+                    return feature.properties.neighbourhood_group === borough;
+                },
+
+                style: function(feature, layer) {
+                    return areaStyleP(feature);
+                },
+                onEachFeature: function(feature, layer) {
+                    layer.bindPopup("<h3>" + feature.properties.neighbourhood + "</h3> <hr> <h4> Price:" + feature.properties.Price + "</h4>");
+                }
+            }).addTo(layers.avg_price);
+        });
     });
-});
+
+    // Creating the Overlay layers
+    var overlayMaps = {
+        "Listing Count": layers.Count,
+        "Reviews": layers.Reviews,
+        "avg_price": layers.avg_price
+    };
+    // Removing the BaseControl and adding new layer control
+    myMap.removeControl(baseControl);
+    myMap.addLayer(layers.Count)
+    LayerControl = L.control.layers(baseMaps, overlayMaps).addTo(myMap);
+
+};
 
 
-// Creating the Legend
-var legend = L.control({ position: 'bottomright' });
-legend.onAdd = function(map) {
+// Creating the Listing Legend
+var legendL = L.control({ position: 'bottomright' });
+legendL.onAdd = function(map) {
     var div = L.DomUtil.create('div', 'info legend'),
-        grades = [0, 1, 2, 3, 4, 5],
-        labels = [];
+        grades = [0, 50, 100, 500, 1000, 1500],
 
-    // loop through our density intervals and generate a label with a colored square for each interval
+        labels = [];
+    div.innerHTML += '<b>Listing Count</b><br>' // Legend Title
+        // loop through our density intervals and generate a label with a colored square for each interval
     for (var i = 0; i < grades.length; i++) {
         div.innerHTML +=
             '<i style="background:' + getValue(grades[i] + 1) + '"></i> ' +
@@ -123,7 +216,62 @@ legend.onAdd = function(map) {
     return div;
 };
 
-// Adding the Legend
-legend.addTo(myMap);
-// Adding the Control
-L.control.layers(baseMaps, overlayMaps, { collapsed: false }).addTo(myMap);
+// Creating the Legend for reviews
+var legendR = L.control({ position: 'bottomright' });
+legendR.onAdd = function(map) {
+    var div = L.DomUtil.create('div', 'info legend'),
+        grades = [0, 500, 1000, 2000, 5000, 10000],
+
+        labels = [];
+    div.innerHTML += '<b>Reviews</b><br>' // Legend Title
+        // loop through our density intervals and generate a label with a colored square for each interval
+    for (var i = 0; i < grades.length; i++) {
+        div.innerHTML +=
+            '<i style="background:' + getValue1(grades[i] + 1) + '"></i> ' +
+            grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+    }
+
+    return div;
+};
+
+// Creating the Legend for Price
+var legendP = L.control({ position: 'bottomright' });
+legendP.onAdd = function(map) {
+    var div = L.DomUtil.create('div', 'info legend'),
+        grades = [0, 40, 90, 150, 200, 300],
+
+        labels = [];
+    div.innerHTML += '<b>Avg Price</b><br>' // Legend Title
+        // loop through our density intervals and generate a label with a colored square for each interval
+    for (var i = 0; i < grades.length; i++) {
+        div.innerHTML +=
+            '<i style="background:' + getValueP(grades[i] + 1) + '"></i> ' +
+            grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+    }
+
+    return div;
+};
+
+
+legendL.addTo(myMap);
+// legendR.addTo(myMap);
+// legendP.addTo(myMap);
+
+// Adding the Legends
+myMap.on('overlayadd', function(eventLayer) {
+    // Switch to the Permafrost legend...
+    if (eventLayer.name === 'Listing Count') {
+        this.removeControl(legendR);
+        this.removeControl(legendP);
+        legendL.addTo(this)
+    } else if (eventLayer.name === 'Reviews') {
+        this.removeControl(legendL);
+        this.removeControl(legendP);
+        legendR.addTo(this);
+
+    } else { // Or switch to the treeline legend...
+        this.removeControl(legendL);
+        this.removeControl(legendR);
+        legendP.addTo(this);
+    }
+});

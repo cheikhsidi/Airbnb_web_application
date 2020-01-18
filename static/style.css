@@ -4,7 +4,8 @@
 }
 
 .jumbotron {
-    background-color: #4682B4;
+    background-image: url(Images/NYC\ .jpg);
+    background-size: 100% !important;
     color: white;
 }
 
@@ -23,19 +24,19 @@ h2 {
 }
 
 #sel1 {
-    font-size: 2rem;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+#sel2 {
+    font-size: 1.5rem;
     font-weight: bold;
 }
 
 .dropdown {
     background-color: aliceblue;
-    padding: 60px;
+    padding: 40px;
     font-weight: bold;
-}
-
-.demographic {
-    margin-top: 20px;
-    margin-bottom: 10px;
 }
 
 .card-header {
@@ -53,6 +54,6 @@ h2 {
     font-size: 2rem;
 }
 
-#bbl-plot {
-    margin-top: 50px;
+#plot1 {
+    clear: top;
 }

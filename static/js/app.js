@@ -1,99 +1,89 @@
-function buildMetadata(sample) {
+// Building the Graph Average price of Room type by Borough
+function buildCharts(Room) {
+    var bor = `http://127.0.0.1:5000/boroughP/${Room}`;
+    // @TODO: Use `d3.json` to fetch the Borough data for the plots
+    // @TODO: Build a Bubble Chart using the Borough data
+    var boroughs = []
+    var Price = []
+    var Percent = []
+    d3.json(bor, function(data) {
+        console.log(data)
+        data.forEach(Element => {
+            boroughs.push(Element.Borough)
+            Price.push(Element.Price)
+            Percent.push(Element.Percent)
+        })
+        console.log(boroughs)
+        console.log(Price)
+            // boroughs = boroughs
+            // var colors = 'rgba(207, 114, 255, 0.5)'
+        var trace1 = {
+            y: boroughs,
+            x: Price,
+            name: 'Avg Price',
+            type: "bar",
+            orientation: "h",
+            marker: {
+                color: 'rgba(55,128,191,0.6)',
+                width: 1
+            },
+            text: Price.map(String),
+            textposition: 'auto'
 
-  // @TODO: Complete the following function that builds the metadata panel
+        };
+        var trace2 = {
+            y: boroughs,
+            x: Percent,
+            name: 'Listing Percent',
+            type: "bar",
+            orientation: "h",
+            marker: {
+                color: 'rgba(255,153,51,0.6)',
+                width: 1
+            },
+            text: Percent.map(String),
+            textposition: 'auto'
 
-  // Use `d3.json` to fetch the metadata for a sample
-  var metadataURL = `/metadata/${sample}`;
-    // Use d3 to select the panel with id of `#sample-metadata`
-    d3.json(metadataURL).then(function(sample){
-      var sampleData = d3.select(`#sample-metadata`);
-    // Use `.html("") to clear any existing metadata
-      sampleData.html("");
-    // Use `Object.entries` to add each key and value pair to the panel
-    // Hint: Inside the loop, you will need to use d3 to append new
-    // tags for each key-value in the metadata.
-      Object.entries(sample).forEach(function([key,value]){
-        var row = sampleData.append("p");
-        row.text(`${key}:${value}`)
-      })
+        };
+
+        // Create the data array for the bar plot
+        var data = [trace1, trace2];
+        // Define the bar plot layout
+        var layout = {
+            autosize: false,
+            barmode: 'stack',
+            title: {
+                text: 'Average Price per Borough',
+                font: {
+                    // family: 'Courier New, monospace',
+                    size: 20
+                }
+            },
+            height: 500,
+            width: 500,
+            margin: {
+                l: 120,
+                r: 50,
+                b: 20,
+                t: 30,
+                pad: 0
+            },
+            font: {
+                size: 16,
+                weight: 'bold'
+            },
+            yaxis: {
+                autorange: 'reversed',
+            },
+
+            config: {
+                'displayModeBar': true
+            }
+
+        };
+
+        // Plot the chart to a div tag with id "bar-plot"
+        Plotly.newPlot("plot1", data, layout);
+
     });
-}
-
-function buildCharts(sample) {
-  // @TODO: Use `d3.json` to fetch the sample data for the plots
-  var plotData = `/samples/${sample}`;
-  // @TODO: Build a Bubble Chart using the sample data
-  d3.json(plotData).then(function(data){
-    var x_axis = data.otu_ids;
-    var y_axis = data.sample_values;
-    var size = data.sample_values;
-    var color = data.otu_ids;
-    var texts = data.otu_labels;
-  
-    var bubble = {
-      x: x_axis,
-      y: y_axis,
-      text: texts,
-      mode: `markers`,
-      marker: {
-        size: size,
-        color: color
-      }
-    };
-
-    var data = [bubble];
-    var layout = {
-      title: "Belly Button Bacteria",
-      xaxis: {title: "OTU ID"}
-    };
-    Plotly.newPlot("bubble", data, layout);
-
-    // @TODO: Build a Pie Chart
-    d3.json(plotData).then(function(data){
-      var values = data.sample_values.slice(0,10);
-      var labels = data.otu_ids.slice(0,10);
-      var display = data.otu_labels.slice(0,10);
-
-      var pie_chart = [{
-        values: values,
-        lables: labels,
-        hovertext: display,
-        type: "pie"
-      }];
-      Plotly.newPlot('pie',pie_chart);
-    });
-  });
 };
-
-    // HINT: You will need to use slice() to grab the top 10 sample_values,
-    // otu_ids, and labels (10 each).
-
-function init() {
-  console.log('hello');
-  // Grab a reference to the dropdown select element
-  var selector = d3.select("#selDataset");
-
-  // Use the list of sample names to populate the select options
-  d3.json("/names").then((sampleNames) => {
-    sampleNames.forEach((sample) => {
-      selector
-        .append("option")
-        .text(sample)
-        .property("value", sample);
-    });
-
-    // Use the first sample from the list to build the initial plots
-    const firstSample = sampleNames[0];
-    buildCharts(firstSample);
-    buildMetadata(firstSample);
-  });
-}
-
-function optionChanged(newSample) {
-  // Fetch new data each time a new sample is selected
-  buildCharts(newSample);
-  buildMetadata(newSample);
-}
-
-// Initialize the dashboard
-init();
