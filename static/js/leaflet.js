@@ -177,7 +177,7 @@ function BuildMap(borough) {
                     return areaStyleP(feature);
                 },
                 onEachFeature: function(feature, layer) {
-                    layer.bindTooltip("<h3>" + feature.properties.neighbourhood + "</h3> <hr> <h4> Price:" + feature.properties.Price + "</h4>", { className: 'myCSSClass' });
+                    layer.bindTooltip("<h3>" + feature.properties.neighbourhood + "</h3> <hr> <h4>Avg Price:" + "$" + feature.properties.Price + "</h4>", { className: 'myCSSClass' });
                 }
             }).addTo(layers.avg_price);
         });
