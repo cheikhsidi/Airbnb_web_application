@@ -118,9 +118,6 @@ var geojsonLayer1;
 var geojsonLayer2;
 var geojsonLayer3;
 
-var opacitySlider = new L.Control.opacitySlider();
-myMap.addControl(opacitySlider);
-
 // Creating a function to build the Map
 function BuildMap(borough) {
     var listing = `http://127.0.0.1:5000/listing/${borough}`;
