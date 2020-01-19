@@ -1,8 +1,22 @@
 //  Rendering all the Graphs on each selection
 
 // Retreiving Data
-var nbs = "http://127.0.0.1:5000/borough"
-var rmt = "http://127.0.0.1:5000/RoomT"
+var nbs = "http://127.0.0.1:5000/borough";
+var rmt = "http://127.0.0.1:5000/RoomT";
+
+function SetView(borough) {
+    if (borough === 'Bronx') {
+        myMap.setView(new L.LatLng(40.84, -73.8659), 12);
+    } else if (borough === 'Manhattan') {
+        myMap.setView(new L.LatLng(40.78343, -73.96625), 12);
+    } else if (borough === 'Brooklyn') {
+        myMap.setView(new L.LatLng(40.650002, -73.949997), 12);
+    } else if (borough === 'Queens') {
+        myMap.setView(new L.LatLng(40.68149, -73.83652), 12);
+    } else {
+        myMap.setView(new L.LatLng(40.579021, -74.151535), 12);
+    }
+};
 
 // Removing All Layers before rendering the new once
 function removeLayer() {
@@ -12,7 +26,8 @@ function removeLayer() {
     myMap.removeLayer(layers.avg_price);
     myMap.removeControl(LayerControl);
     baseControl.addTo(myMap);
-}
+};
+
 
 // Building the Map and daughnut graphs
 function buildDash() {
@@ -20,7 +35,9 @@ function buildDash() {
     console.log(borough);
     removeLayer()
     BuildMap(borough)
+    SetView(borough)
     daughnut(borough)
+    buildCharts2(borough)
         // buildCharts(testID);
 };
 
@@ -53,6 +70,7 @@ function init() {
         const firstbr = nbhoods[0];
         daughnut(firstbr);
         BuildMap(firstbr);
+        buildCharts2(firstbr)
     });
 
     // RoomType Dropdown

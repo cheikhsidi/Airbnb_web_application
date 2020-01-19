@@ -30,9 +30,57 @@
         margin-right: 8px;
         opacity: 0.7;
     }
+    /* css to customize Leaflet default styles  */
+    
+    .myCSSClass {
+        background: rgb(10, 10, 10);
+        color: aliceblue;
+        /* border: 2px solid cyan */
+    }
+    
+    .leaflet-tooltip-left.myCSSClass::before {
+        border-left-color: cyan;
+    }
+    
+    .leaflet-tooltip-right.myCSSClass::before {
+        border-right-color: cyan;
+    }
+    
+    #myChart,
+    #plot1,
+    #myChart2 {
+        display: block;
+        margin-top: 30px;
+        margin-left: auto;
+        margin-right: auto;
+        display: flex;
+        align-items: center;
+        text-align: center;
+        float: none;
+        /* margin: 0 auto; */
+    }
     
     @media only screen and (min-width: 992px) {
         #map {
             height: 500px;
+        }
+    }
+    
+    @media only screen and (max-width: 768px) {
+        #map {
+            height: 400px;
+        }
+        #myChart,
+        #plot1,
+        #myChart2 {
+            display: block;
+            margin-top: 30px;
+            margin-left: auto;
+            margin-right: auto;
+            display: flex;
+            align-items: center;
+            text-align: center;
+            float: none;
+            /* margin: 0 auto; */
         }
     }

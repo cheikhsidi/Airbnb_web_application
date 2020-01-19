@@ -37,17 +37,19 @@ Base.prepare(db.engine, reflect=True)
 # Measurement = Base.classes.measurement
 data = Base.classes.airbnNYC_data
 
+
+# Home Route
 @app.route("/")
 @app.route("/home")
 def index():
     return render_template("index.html")
 
-
+# About Page Route
 @app.route("/about")
 def about():
     return render_template("about.html")
 
-
+# Data Set Route
 @app.route("/datasets")
 def DataRoutes():
     """Return a JSON list of dataset Routes"""
@@ -57,7 +59,7 @@ def DataRoutes():
             '/listing/<borough>\n'\
             '/Room/<borough>\n'\
   
-
+# # Drop Dwon List of Boroughs 
 @app.route("/borough")
 def borough():
     """Return a JSON Borough Dropdown list"""
@@ -68,7 +70,7 @@ def borough():
     d = df.to_dict('list')
     return json.dumps(d)
 
-
+# Room Type Drop down list route
 @app.route("/RoomT")
 def Room():
     """Return a JSON RoomType Dropdown list"""
@@ -80,6 +82,7 @@ def Room():
     d = df.to_dict('list')
     return json.dumps(d)
 
+# Avg price of Room type per borough
 @app.route("/boroughP/<Room>")
 def boroughP(Room):
     """Return a JSON neighbourhood Dropdown list"""
@@ -119,25 +122,29 @@ def lising(borough):
     return json.dumps(d)
 
 
-# Property Type Route
+# # Room Type Route
 @app.route("/Room/<borough>")
 def getRoom(borough):
     """Return a JSON dataset for property type of airbnb listing"""
     prpt = db.session.query(data.Borough, 
-                            data.Room_Type, data.Price).statement
+                            data.Room_Type, data.Price, data.Review_Rating, data.review_scores_cleanliness,
+                            data.review_scores_value, data.host_response_rate).statement
     df = pd.read_sql_query(prpt, db.session.bind)
     df = df[df['Borough'] == borough]
+    df["host_response_rate"] = df["host_response_rate"].str.replace("%", "").astype(float)
+    df["review_scores_cleanliness"] = df["review_scores_cleanliness"].str.replace(".", "").astype(float)
+    df["review_scores_value"] = df["review_scores_value"].str.replace(".", "").astype(float)
     df1 = df.groupby('Room_Type').count().reset_index()
     df2 = df.groupby('Room_Type').mean().reset_index().round(2)
     df = pd.merge(df1, df2, on='Room_Type')
-    df = df[['Room_Type', 'Borough', 'Price_y']].rename(
-    columns={'Price_y': 'Avg_price'})
+    df = df[['Room_Type', 'Borough', 'Price_y', 'Review_Rating_y', 'review_scores_cleanliness_y', 'review_scores_value_y', 'host_response_rate_y']].rename(
+    columns={'Price_y': 'Avg_price', 'Review_Rating_y':'RRate', 'review_scores_cleanliness_y':'RClean', 'review_scores_value_y':'RValue', 'host_response_rate_y':'HostResponseR' })
     df['percent'] = round((df.Borough/df.Borough.sum())*100, 2)
     d = df.to_dict('records')
-    print(len(d))
+
     return json.dumps(d)
 
-
+# Avg Price per borough route
 @app.route("/price/<Borough>")
 def price(Borough):
     """Return a list of sample names."""
@@ -150,6 +157,24 @@ def price(Borough):
     d = df_price.to_dict('list')
     print(len(d))
     return json.dumps(d)
+
+# # Average Revirw rating
+# @app.route("/Room/<borough>")
+# def getRoom(borough):
+#     """Return a JSON dataset for property type of airbnb listing"""
+#     prpt = db.session.query(data.Borough,
+#                             data.Room_Type, data.Price).statement
+#     df = pd.read_sql_query(prpt, db.session.bind)
+#     df = df[df['Borough'] == borough]
+#     df1 = df.groupby('Room_Type').count().reset_index()
+#     df2 = df.groupby('Room_Type').mean().reset_index().round(2)
+#     df = pd.merge(df1, df2, on='Room_Type')
+#     df = df[['Room_Type', 'Borough', 'Price_y']].rename(
+#         columns={'Price_y': 'Avg_price'})
+#     df['percent'] = round((df.Borough/df.Borough.sum())*100, 2)
+#     d = df.to_dict('records')
+#     print(len(d))
+#     return json.dumps(d)
 
 
 if __name__ == "__main__":

@@ -46,7 +46,7 @@ Chart.pluginService.register({
 function daughnut(Borough) {
     var room = `http://127.0.0.1:5000/Room/${Borough}`
     var ctx = document.getElementById("myChart");
-    var ctx1 = document.getElementById("myChart2");
+    // var ctx1 = document.getElementById("myChart2");
 
     d3.json(room, function(d) {
         var percent = []
@@ -64,23 +64,41 @@ function daughnut(Borough) {
             data: {
                 labels: B,
                 datasets: [{
-                    label: 'Number of Listings per room type',
-                    data: percent,
-                    backgroundColor: [
-                        'rgba(255, 99, 132, 0.5)',
-                        'rgba(54, 162, 235, 0.2)',
-                        'rgba(255, 206, 86, 0.2)',
-                        'rgba(75, 192, 192, 0.2)'
-                    ],
-                    borderColor: [
-                        'rgba(255,99,132,1)',
-                        'rgba(54, 162, 235, 1)',
-                        'rgba(255, 206, 86, 1)',
-                        'rgba(75, 192, 192, 1)'
-                    ],
-                    borderWidth: 1,
-                    borderAlign: 'inner'
-                }]
+                        label: 'Number of Listings per room type',
+                        data: percent,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.5)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(255, 206, 86, 0.2)',
+                            'rgba(75, 192, 192, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(255,99,132,1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)'
+                        ],
+                        borderWidth: 1,
+                        borderAlign: 'inner'
+                    },
+                    {
+                        label: 'AVG Prices per Room Type',
+                        data: avg,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.5)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(255, 206, 86, 0.2)',
+                            'rgba(75, 192, 192, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(255,99,132,1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)'
+                        ],
+                        borderWidth: 2
+                    }
+                ]
             },
             options: {
                 elements: {
@@ -88,15 +106,18 @@ function daughnut(Borough) {
                         text: Borough,
                         color: '#36A2EB', //Default black
                         fontStyle: 'Helvetica', //Default Arial
-                        sidePadding: 15 //Default 20 (as a percentage)
+                        sidePadding: 10 //Default 20 (as a percentage)
                     }
                 },
+
                 plugins: {
                     labels: {
                         render: function(args) {
-                            return args.value + '%';
+                            return args.value;
                         },
-                        // render: 'value',
+                        // render: function(args) {
+                        //     return args.value[1] + '$';
+                        // },
                         fontSize: 15,
                         fontStyle: 'bold'
                     }
@@ -108,85 +129,19 @@ function daughnut(Borough) {
                     position: 'top',
                     fontSize: 18,
                     fontStyle: 'bold',
-                    text: "Percent of Room Type Listing per Borough"
+                    fontColor: 'balck',
+                    text: "Percent, Average price of Room Listing per Borough"
                 },
                 legend: {
                     position: 'right',
                     labels: {
                         fontColor: "black",
-                        boxWidth: 30,
-                        padding: 30
+                        boxWidth: 20,
+                        padding: 20
                     }
                 },
                 maintainAspectRatio: false
 
-
-            }
-        });
-
-        var myChart1 = new Chart(ctx1, {
-            type: 'doughnut',
-            data: {
-                labels: B,
-                datasets: [{
-                    label: 'AVG Prices per Room Type',
-                    data: avg,
-                    backgroundColor: [
-                        'rgba(255, 99, 132, 0.5)',
-                        'rgba(54, 162, 235, 0.2)',
-                        'rgba(255, 206, 86, 0.2)',
-                        'rgba(75, 192, 192, 0.2)'
-                    ],
-                    borderColor: [
-                        'rgba(255,99,132,1)',
-                        'rgba(54, 162, 235, 1)',
-                        'rgba(255, 206, 86, 1)',
-                        'rgba(75, 192, 192, 1)'
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                elements: {
-                    center: {
-                        text: Borough,
-                        color: '#36A2EB', //Default black
-                        fontStyle: 'Helvetica', //Default Arial
-                        sidePadding: 15 //Default 20 (as a percentage)
-                    }
-                },
-
-                plugins: {
-                    labels: {
-                        render: function(args) {
-                            // args will be something like:
-                            // { label: 'Label', value: 123, percentage: 50, index: 0, dataset: {...} }
-                            return '$' + args.value;
-                        },
-                        // render: 'value',
-                        fontSize: 15,
-                        fontStyle: 'bold'
-
-                    }
-                },
-                cutoutPercentage: 40,
-                responsive: true,
-                title: {
-                    display: true,
-                    position: 'top',
-                    fontSize: 18,
-                    fontStyle: 'bold',
-                    text: "Average Price of Room Type  per Borough"
-                },
-                legend: {
-                    position: 'right',
-                    labels: {
-                        fontColor: "black",
-                        boxWidth: 30,
-                        padding: 30
-                    }
-                },
-                maintainAspectRatio: false
 
             }
         });

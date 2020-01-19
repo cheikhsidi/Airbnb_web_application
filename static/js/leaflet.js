@@ -68,12 +68,11 @@ function getValue1(x) {
 
 function getValueP(x) {
 
-    return x > 300 ? "#770087" :
-        x > 200 ? "#9600B3" :
-        x > 150 ? "#AA00D7" :
-        x > 90 ? "#C030ED" :
-        x > 40 ? "#DC86FA" :
-        "#FBF2FF";
+    return x > 200 ? "#005582" :
+        x > 150 ? "#0086ad" :
+        x > 100 ? "#00c2c7" :
+        x > 50 ? "#97ebdb" :
+        "#daf8e3";
 }
 
 // Styling the Map Listing(count)
@@ -119,6 +118,9 @@ var geojsonLayer1;
 var geojsonLayer2;
 var geojsonLayer3;
 
+var opacitySlider = new L.Control.opacitySlider();
+myMap.addControl(opacitySlider);
+
 // Creating a function to build the Map
 function BuildMap(borough) {
     var listing = `http://127.0.0.1:5000/listing/${borough}`;
@@ -149,7 +151,7 @@ function BuildMap(borough) {
                     return areaStyle(feature);
                 },
                 onEachFeature: function(feature, layer) {
-                    layer.bindPopup("<h3>" + feature.properties.neighbourhood + "</h3> <hr> <h4> Listing:" + feature.properties.count + "</h4>");
+                    layer.bindTooltip("<h3>" + feature.properties.neighbourhood + "</h3> <hr> <h4> Listing:" + feature.properties.count + "</h4>", { className: 'myCSSClass' });
                 }
 
             }).addTo(layers.Count);
@@ -164,7 +166,7 @@ function BuildMap(borough) {
                     return areaStyle1(feature);
                 },
                 onEachFeature: function(feature, layer) {
-                    layer.bindPopup("<h3>" + feature.properties.neighbourhood + "</h3> <hr> <h4> Reviews:" + feature.properties.Reviews + "</h4>");
+                    layer.bindTooltip("<h4>" + feature.properties.neighbourhood + "</h4> <hr> <h5> Reviews:" + feature.properties.Reviews + "</h5>", { className: 'myCSSClass' });
                 }
             }).addTo(layers.Reviews);
 
@@ -178,7 +180,7 @@ function BuildMap(borough) {
                     return areaStyleP(feature);
                 },
                 onEachFeature: function(feature, layer) {
-                    layer.bindPopup("<h3>" + feature.properties.neighbourhood + "</h3> <hr> <h4> Price:" + feature.properties.Price + "</h4>");
+                    layer.bindTooltip("<h3>" + feature.properties.neighbourhood + "</h3> <hr> <h4> Price:" + feature.properties.Price + "</h4>", { className: 'myCSSClass' });
                 }
             }).addTo(layers.avg_price);
         });
@@ -193,7 +195,7 @@ function BuildMap(borough) {
     // Removing the BaseControl and adding new layer control
     myMap.removeControl(baseControl);
     myMap.addLayer(layers.Count)
-    LayerControl = L.control.layers(baseMaps, overlayMaps).addTo(myMap);
+    LayerControl = L.control.layers(baseMaps, overlayMaps, { collapsed: false }).addTo(myMap);
 
 };
 
@@ -238,7 +240,7 @@ legendR.onAdd = function(map) {
 var legendP = L.control({ position: 'bottomright' });
 legendP.onAdd = function(map) {
     var div = L.DomUtil.create('div', 'info legend'),
-        grades = [0, 40, 90, 150, 200, 300],
+        grades = [0, 50, 100, 150, 200],
 
         labels = [];
     div.innerHTML += '<b>Avg Price</b><br>' // Legend Title
@@ -254,8 +256,6 @@ legendP.onAdd = function(map) {
 
 
 legendL.addTo(myMap);
-// legendR.addTo(myMap);
-// legendP.addTo(myMap);
 
 // Adding the Legends
 myMap.on('overlayadd', function(eventLayer) {
@@ -269,9 +269,21 @@ myMap.on('overlayadd', function(eventLayer) {
         this.removeControl(legendP);
         legendR.addTo(this);
 
-    } else { // Or switch to the treeline legend...
+    } else { // Or switch to the Price legend...
         this.removeControl(legendL);
         this.removeControl(legendR);
         legendP.addTo(this);
+    }
+});
+
+myMap.on('overlayremove', function(eventLayer) {
+    // Switch to the Permafrost legend...
+    if (eventLayer.name === 'Listing Count') {
+        this.removeControl(legendL);
+    } else if (eventLayer.name === 'Reviews') {
+        this.removeControl(legendR);
+    } else { // Or switch to the Price legend...
+        this.removeControl(legendP);
+
     }
 });
